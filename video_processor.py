@@ -52,7 +52,7 @@ def process_video(video_path, output_dir, keywords=None, pad_before=1.5, pad_aft
             })
             
             # Skip forward to avoid detecting the same elimination multiple times (e.g., skip 1.5 seconds)
-            current_frame += int(fps * 1.5)
+            current_frame += int(fps * 2.5)
             continue
             
         current_frame += frame_skip

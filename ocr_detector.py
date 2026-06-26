@@ -1,19 +1,19 @@
-import easyocr
 import cv2
 import numpy as np
 import re
 import os
+import difflib
+from rapidocr_onnxruntime import RapidOCR
 
 class OCRDetector:
     def __init__(self, keywords=None):
         if keywords is None:
             keywords = ["eliminated", "knocked out"]
         self.keywords = keywords
-        print("Initializing EasyOCR (this may take a moment)...")
-        # Initialize easyocr reader for english using local pre-packaged models
-        model_dir = os.path.join(os.path.dirname(os.path.abspath(__file__)), 'models')
-        self.reader = easyocr.Reader(['en'], gpu=False, model_storage_directory=model_dir, download_enabled=False)
-        print("EasyOCR initialized.")
+        print("Initializing RapidOCR (ONNX Runtime)...")
+        # Initialize RapidOCR (this uses ONNX and requires zero PyTorch dependencies!)
+        self.engine = RapidOCR()
+        print("RapidOCR initialized.")
         
     def detect_elimination(self, frame):
         """
@@ -32,16 +32,18 @@ class OCRDetector:
         
         roi = frame[y_start:y_end, x_start:x_end]
         
-        # Convert to grayscale
-        gray = cv2.cvtColor(roi, cv2.COLOR_BGR2GRAY)
-        
+        # RapidOCR (PaddleOCR models) expects 3-channel color images
         # Upscale slightly for the OCR engine, but keep all anti-aliasing intact!
-        processed = cv2.resize(gray, None, fx=2.0, fy=2.0, interpolation=cv2.INTER_CUBIC)
+        processed = cv2.resize(roi, None, fx=2.0, fy=2.0, interpolation=cv2.INTER_CUBIC)
         
-        # Run OCR
-        results = self.reader.readtext(processed)
+        # Run OCR via ONNX Runtime
+        results, _ = self.engine(processed)
         
-        # Process results
+        # RapidOCR returns None if it finds no text
+        if not results:
+            return {'detected': False, 'username': None}
+            
+        # Process results: RapidOCR returns a list of [box, text, confidence]
         text_lines = [res[1] for res in results]
         full_text = " ".join(text_lines)
         # print(f"[DEBUG] EasyOCR read: '{full_text}'")

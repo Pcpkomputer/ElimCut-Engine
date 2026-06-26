@@ -58,7 +58,7 @@ def main():
             cut_video(video_path, output_dir, timestamp_sec, keyword_matched, "test_clip", args.pad_before, args.pad_after)
             
             # Skip ahead 1.5 seconds so we don't detect the same elimination message multiple times
-            current_frame += int(fps * 1.5)
+            current_frame += int(fps * 2.5)
         else:
             # Print a progress indicator without spamming new lines
             sys.stdout.write(f"\rScanning timestamp: {timestamp_sec:.2f}s ")
