@@ -33,9 +33,20 @@ def cut_video(video_path, output_base_dir, timestamp_sec, username, category, pa
         except AttributeError:
             subclip = clip.subclip(start_time, end_time) # v1
         
+        # Set an absolute path for the temporary audio file
+        # This prevents MoviePy from trying to write to the root directory '/' 
+        # when the app is launched as a packaged macOS app.
+        temp_audio = output_filename + ".temp_audio.m4a"
+        
         # Write to file
         # logger=None to suppress moviepy output in terminal
-        subclip.write_videofile(output_filename, codec="libx264", audio_codec="aac", logger=None)
+        subclip.write_videofile(
+            output_filename, 
+            codec="libx264", 
+            audio_codec="aac", 
+            logger=None,
+            temp_audiofile=temp_audio
+        )
         
         # Close clip to free resources
         clip.close()
