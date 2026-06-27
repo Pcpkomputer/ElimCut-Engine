@@ -18,8 +18,14 @@ def cut_video(video_path, output_base_dir, timestamp_sec, username, category, pa
     os.makedirs(output_base_dir, exist_ok=True)
     
     # Save all clips in one folder, including category and username in the filename
-    output_filename = os.path.join(output_base_dir, f"{category}_{username}_{int(timestamp_sec)}.mp4")
+    base_name = f"{category}_{username}_{int(timestamp_sec)}"
+    output_filename = os.path.join(output_base_dir, f"{base_name}.mp4")
     
+    # Prevent overwriting if there are multiple clips at the same second
+    counter = 1
+    while os.path.exists(output_filename):
+        output_filename = os.path.join(output_base_dir, f"{base_name}_{counter}.mp4")
+        counter += 1
     try:
         # Load video
         clip = VideoFileClip(video_path)
